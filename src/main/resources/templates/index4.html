@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Image Preview with Cropper.js</title>
+
+    <!-- Bootstrap CSS (optional, for styling) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Cropper.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+</head>
+<body>
+
+<div class="container mt-5">
+    <!-- Image Preview and Cropper Container -->
+    <div class="mb-3">
+        <label for="imageInput" class="form-label">Select an image:</label>
+        <input type="file" class="form-control" id="imageInput" accept="image/*">
+    </div>
+
+    <!-- Live Image Preview -->
+    <div id="imagePreviewContainer" class="mb-3" style="display: none;" hidden="hidden">
+        <h5>Live Image Preview</h5>
+        <img id="imagePreview" class="img-fluid" alt="Live Preview">
+    </div>
+
+    <!-- Cropper Container -->
+    <div id="cropperContainer" class="mb-3" style="display: none;">
+        <h5>Image Cropper</h5>
+        <img id="cropperImage" class="img-fluid" alt="Croppable Image">
+    </div>
+
+    <!-- Form for Image Upload (Add your form handling logic) -->
+    <form action="/upload" method="post" enctype="multipart/form-data" class="mb-3">
+        <!-- Hidden input to store cropped data -->
+        <input type="hidden" id="croppedData" name="croppedData">
+
+        <!-- Upload Button -->
+        <button type="submit" class="btn btn-success">Upload Cropped Image</button>
+    </form>
+</div>
+
+<!-- Bootstrap JS (optional, for Bootstrap components) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Cropper.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+<script>
+    var cropper;
+
+    // Event listener for file input change
+    document.getElementById('imageInput').addEventListener('change', function (event) {
+        var fileInput = event.target;
+        var imagePreview = document.getElementById('imagePreview');
+        var imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        var cropperContainer = document.getElementById('cropperContainer');
+        var cropperImage = document.getElementById('cropperImage');
+
+        // Check if a file is selected
+        if (fileInput.files && fileInput.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                // Display the live preview of the selected image
+                imagePreview.src = e.target.result;
+                imagePreviewContainer.style.display = 'block';
+
+                // Initialize Cropper for the cropperImage
+                cropperImage.src = e.target.result;
+                cropperContainer.style.display = 'block';
+                initializeCropper();
+            };
+
+            // Read the selected file as a data URL
+            reader.readAsDataURL(fileInput.files[0]);
+        } else {
+            // Hide the image preview and Cropper container if no file is selected
+            imagePreview.src = '';
+            imagePreviewContainer.style.display = 'none';
+            cropperContainer.style.display = 'none';
+
+            // Destroy previous Cropper instance
+            if (cropper) {
+                cropper.destroy();
+            }
+        }
+    });
+
+    // Function to initialize Cropper
+    function initializeCropper() {
+        // Destroy previous Cropper instance
+        if (cropper) {
+            cropper.destroy();
+        }
+
+        // Initialize Cropper for the cropperImage
+        cropper = new Cropper(document.getElementById('cropperImage'), {
+            aspectRatio:NaN ,  // Set your desired aspect ratio
+            viewMode: 2,  // Adjust viewMode as needed
+            dragMode: 'move',  // Enable free drag
+            responsive: true,  // Enable responsive mode
+        });
+    }
+
+    // Handle Form Submission
+    var form = document.querySelector('form');
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        // Get cropped data and set it to the hidden input
+        var croppedData = cropper.getData();
+        document.getElementById('croppedData').value = JSON.stringify(croppedData);
+
+        // Submit the form
+        form.submit();
+    });
+</script>
+</body>
+</html>
